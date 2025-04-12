@@ -65,25 +65,18 @@ public class DictionaryClientGUI extends JFrame implements KeyListener, ActionLi
         // Start up text
         String startUpMsg = """
                 Welcome to this simple dictionary app, here is a list of available commands
-                
                 "start()":
                 attempts to connect the app to the server
-                
                 "exit()":
                 closes the connection to the server
-                
                 "meaning('word')":
                 Fetches the meaning of the specified word
-                
                 "new(word, meaning1, meaning2, ...):
                 Creates a new word with the specified meaning(s)
-                
                 "remove(word)":
                 Removes the specified word
-                
                 "add_meaning(word, meaning)":
                 Adds a new meaning to the specified word
-                
                 "update(word, old_meaning, new_meaning)":
                 Updates the old meaning of the specified word with the new meaning
                 

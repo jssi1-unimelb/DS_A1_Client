@@ -1,17 +1,14 @@
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
 public class Client implements EventPublisher {
-    private Socket socket;
-    private InputStream is;
-    private OutputStream os;
-    private static DataInputStream dis;
-    private static DataOutputStream dos;
+    private Socket client;
+    protected DataInputStream dis;
+    private DataOutputStream dos;
     private boolean liveConnection = false;
-    private EventListener listener;
+    private ServerReader serverReader = null;
+    private EventListener guiListener;
     ArrayList<String> validCommands;
 
     public Client() {
@@ -37,19 +34,13 @@ public class Client implements EventPublisher {
             String parameterString = request.substring(index+1, endIndex);
             String[] parameters = parameterString.split(",");
 
-            switch (command) {
-                case "meaning":
-                case "remove":
-                    return parameters.length == 1;
-                case "add_meaning":
-                    return parameters.length == 2;
-                case "update":
-                    return parameters.length == 3;
-                case "new":
-                    return parameters.length >= 2; // At least 2 parameters
-                default:
-                    return true;
-            }
+            return switch (command) {
+                case "meaning", "remove" -> parameters.length == 1;
+                case "add_meaning" -> parameters.length == 2;
+                case "update" -> parameters.length == 3;
+                case "new" -> parameters.length >= 2; // At least 2 parameters
+                default -> true;
+            };
         }
         return false;
     }
@@ -75,9 +66,6 @@ public class Client implements EventPublisher {
                     if(request.equals("exit()")) {
                         closeConnection();
                         notifyListener("connection closed");
-                    } else {
-                        String response = dis.readUTF(); // Block and listen for server response
-                        notifyListener(response);
                     }
                 }
             }
@@ -87,33 +75,36 @@ public class Client implements EventPublisher {
     }
 
     // Close everything
-    public void closeConnection() {
+    public synchronized void closeConnection() {
        try {
            liveConnection = false;
            dis.close();
-           is.close();
            dos.close();
-           os.close();
-           socket.close();
-       } catch (IOException e) {
+           client.close();
+           wait();
+       } catch (IOException | InterruptedException e) {
            throw new RuntimeException(e);
        }
-
     }
 
     public void startConnection() {
         // Open your connection to a server, at port 1234
         String host = "127.0.0.1";
         try {
-            Socket client = new Socket(host,1234);
+            client = new Socket(host,1234);
             liveConnection = true;
 
             // Open input and output streams
-            is = client.getInputStream();
-            dis = new DataInputStream(is);
-            os = client.getOutputStream();
-            dos = new DataOutputStream(os);
-            notifyListener("Connection Established");
+            dis = new DataInputStream(client.getInputStream());
+            dos = new DataOutputStream(client.getOutputStream());
+
+            if(serverReader == null) { // Hasn't been instantiated yet
+                serverReader = new ServerReader(this);
+                serverReader.start();
+            } else {
+                notifyAll(); // Wake up existing thread
+            }
+            notifyListener("Connection established");
         } catch(UnknownHostException uhe) { // Tried connecting to a server that doesn't exist
             System.out.println("Unknown host: " + host);
             notifyListener("cannot connect, server does not exist");
@@ -127,11 +118,11 @@ public class Client implements EventPublisher {
 
     @Override
     public void addListener(EventListener listener) {
-        this.listener = listener;
+        this.guiListener = listener;
     }
 
     @Override
     public void notifyListener(String msg) {
-        listener.onEvent(msg);
+        guiListener.onEvent(msg);
     }
 }
