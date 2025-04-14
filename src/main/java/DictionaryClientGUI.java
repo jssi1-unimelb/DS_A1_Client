@@ -1,3 +1,4 @@
+// Jiachen Si 1085839
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -12,9 +13,9 @@ public class DictionaryClientGUI extends JFrame implements KeyListener, ActionLi
     private final JTextArea outputArea;
     private final JPanel panel;
     private final JButton submitButton;
-    private final Client client;
+    private final DictionaryClient client;
 
-    public DictionaryClientGUI(Client client) {
+    public DictionaryClientGUI(DictionaryClient client) {
         this.client = client;
         this.inputField = new JTextField();
         this.outputArea = new JTextArea(10, 40);

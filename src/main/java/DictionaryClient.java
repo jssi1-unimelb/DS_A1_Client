@@ -1,17 +1,22 @@
+// Jiachen Si 1085839
 import java.net.*;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Client implements EventPublisher {
+public class DictionaryClient implements EventPublisher {
     private Socket client;
     protected DataInputStream dis;
     private DataOutputStream dos;
     private boolean liveConnection = false;
     private ServerReader serverReader = null;
     private EventListener guiListener;
+    private final String host;
+    private final int port;
 
-    public Client() {}
+    public DictionaryClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
 
     public Request createRequest(String request) {
         int index = request.indexOf("("); // Find first instance of (
@@ -95,9 +100,8 @@ public class Client implements EventPublisher {
 
     public synchronized void startConnection() {
         // Open your connection to a server, at port 1234
-        String host = "127.0.0.1";
         try {
-            client = new Socket(host,1234);
+            client = new Socket(host,port);
             liveConnection = true;
 
             // Open input and output streams

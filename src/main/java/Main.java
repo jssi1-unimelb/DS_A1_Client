@@ -1,8 +1,10 @@
+// Jiachen Si 1085839
 public class Main {
     public static void main(String[] args) {
-        Client client = new Client();
+        String host = args[3];
+        int port = Integer.parseInt(args[4]);
+        DictionaryClient client = new DictionaryClient(host, port);
         DictionaryClientGUI gui = new DictionaryClientGUI(client);
         client.addListener(gui);
-//        client.startConnection();
     }
 }

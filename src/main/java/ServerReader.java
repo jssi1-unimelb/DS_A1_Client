@@ -1,14 +1,11 @@
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
+// Jiachen Si 1085839
 import java.io.IOException;
 
 // Separates the listening blocking activity to its own thread
 public class ServerReader extends Thread {
-    private final Client client;
+    private final DictionaryClient client;
 
-    public ServerReader(Client client) {
+    public ServerReader(DictionaryClient client) {
         this.client = client;
     }
 
@@ -23,7 +20,10 @@ public class ServerReader extends Thread {
                     client.pauseListener();
                 }
             } catch (IOException e) {
-                client.notifyListener("Connection Terminated");
+                System.out.println(e.getMessage());
+                if(e.getMessage().equals("Connection reset")) {
+                    client.notifyListener("connection has been reset, please reconnect");
+                }
                 client.closeConnection();
                 client.pauseListener();
             }

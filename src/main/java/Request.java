@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-
+// Jiachen Si 1085839
 public class Request {
     public String command;
     public String[] parameters;
