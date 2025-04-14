@@ -21,8 +21,10 @@ public class ServerReader extends Thread {
                 }
             } catch (IOException e) {
                 System.out.println(e.getMessage());
-                if(e.getMessage().equals("Connection reset")) {
-                    client.notifyListener("Error: connection has been reset, please reconnect");
+                if(e.getMessage() == null) { // time out
+                    client.notifyListener("Error: Connection timed out");
+                } else if(e.getMessage().equals("Connection reset")) {
+                    client.notifyListener("Error: Connection has been reset, please reconnect");
                 }
                 client.closeConnection();
                 client.pauseListener();

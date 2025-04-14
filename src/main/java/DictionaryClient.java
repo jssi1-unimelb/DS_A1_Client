@@ -33,7 +33,11 @@ public class DictionaryClient implements EventPublisher {
             String[] parameters = new String[0];
             if(!parameterString.isEmpty()) {
                 parameters = parameterString.split(",");
-                parameters = Arrays.stream(parameters).map(String::trim).toArray(String[]::new);
+                parameters =
+                        Arrays.stream(parameters)
+                                .map(String::trim)
+                                .map(s -> s.replaceAll("\"", "")) // Remove quotes
+                                .toArray(String[]::new);
             }
 
             ArrayList<String> validCommands = new ArrayList<>();
