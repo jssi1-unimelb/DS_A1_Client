@@ -106,13 +106,16 @@ public class DictionaryClientGUI extends JFrame implements KeyListener, ActionLi
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == submitButton) {
-            sendRequest(inputField.getText().toLowerCase());
+            sendRequest();
         }
     }
 
-    public void sendRequest(String request) {
-        inputField.setText(""); // Clear input field once command is sent
-        client.sendRequest(request);
+    private void sendRequest() {
+        String req = inputField.getText().toLowerCase().trim();
+        if(!req.isEmpty()) { // Don't process request if it is empty
+            client.sendRequest(req);
+        }
+        inputField.setText(""); // Clear input field
     }
 
     @Override
@@ -128,7 +131,7 @@ public class DictionaryClientGUI extends JFrame implements KeyListener, ActionLi
     @Override
     public void keyPressed(KeyEvent e) {
         if(e.getKeyCode() == 10) { // Enter key pressed
-            sendRequest(inputField.getText().toLowerCase());
+            sendRequest();
         }
     }
 
