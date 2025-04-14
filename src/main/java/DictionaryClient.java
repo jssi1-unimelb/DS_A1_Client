@@ -53,7 +53,7 @@ public class DictionaryClient implements EventPublisher {
         Request request = createRequest(command);
 
         if(request == null) {
-            notifyListener(command + " is an invalid command");
+            notifyListener("error: " + command + " is an invalid command");
             return;
         }
 
@@ -62,11 +62,11 @@ public class DictionaryClient implements EventPublisher {
                 if(request.command.equals("start")) {
                     startConnection(); // Start up the connection
                 } else {
-                    notifyListener("cannot fulfil request, not connected to a server");
+                    notifyListener("error: cannot fulfil request, not connected to a server");
                 }
             } else {
                 if(request.command.equals("start")) {
-                    notifyListener("connection already established");
+                    notifyListener("error: connection already established");
                 } else {
                     String requestJson = GsonUtil.gson.toJson(request);
                     dos.writeUTF(requestJson); // Send request
@@ -118,11 +118,11 @@ public class DictionaryClient implements EventPublisher {
 
         } catch(UnknownHostException uhe) { // Tried connecting to a server that doesn't exist
             System.out.println("Unknown host: " + host);
-            notifyListener("cannot connect, server does not exist");
+            notifyListener("error: cannot connect, server does not exist");
             liveConnection = false;
         } catch(IOException ioe) {
             System.out.println("IOException: " + ioe);
-            notifyListener("connection refused, please try again later");
+            notifyListener("error: connection refused, please try again later");
             liveConnection = false;
         }
     }

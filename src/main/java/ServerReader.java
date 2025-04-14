@@ -22,7 +22,7 @@ public class ServerReader extends Thread {
             } catch (IOException e) {
                 System.out.println(e.getMessage());
                 if(e.getMessage().equals("Connection reset")) {
-                    client.notifyListener("connection has been reset, please reconnect");
+                    client.notifyListener("error: connection has been reset, please reconnect");
                 }
                 client.closeConnection();
                 client.pauseListener();
