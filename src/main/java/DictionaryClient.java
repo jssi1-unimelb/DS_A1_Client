@@ -1,6 +1,7 @@
 // Jiachen Si 1085839
 import java.net.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class DictionaryClient implements EventPublisher {
@@ -33,6 +34,19 @@ public class DictionaryClient implements EventPublisher {
             if(!parameterString.isEmpty()) {
                 parameters = parameterString.split(",");
                 parameters = Arrays.stream(parameters).map(String::trim).toArray(String[]::new);
+            }
+
+            ArrayList<String> validCommands = new ArrayList<>();
+            validCommands.add("meaning");
+            validCommands.add("remove");
+            validCommands.add("add_meaning");
+            validCommands.add("update");
+            validCommands.add("new");
+            validCommands.add("start");
+            validCommands.add("exit");
+            if(!validCommands.contains(command)) {
+                notifyListener("Error: " + request + " is an invalid command");
+                return null;
             }
 
             // Check if command is valid

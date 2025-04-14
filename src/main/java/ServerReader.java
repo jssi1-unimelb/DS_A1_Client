@@ -10,8 +10,8 @@ public class ServerReader extends Thread {
     }
 
     public void run() {
-        try {
-            while(true) {
+        while(true) {
+            try {
                 String responseJson = client.dis.readUTF();             // Listen
                 Response response = GsonUtil.gson.fromJson(responseJson, Response.class);
                 client.notifyListener(response.content);  // Send to console
@@ -19,18 +19,18 @@ public class ServerReader extends Thread {
                     client.closeConnection();
                     client.pauseListener();
                 }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                if(e.getMessage().equals("Connection reset")) {
+                    client.notifyListener("Error: connection has been reset, please reconnect");
+                }
+                client.closeConnection();
+                client.pauseListener();
+            } catch (RuntimeException e) {
+                client.notifyListener("Runtime Exception: " + e.getMessage());
+                client.closeConnection();
+                client.pauseListener();
             }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            if(e.getMessage().equals("Connection reset")) {
-                client.notifyListener("Error: connection has been reset, please reconnect");
-            }
-            client.closeConnection();
-            client.pauseListener();
-        } catch (RuntimeException e) {
-            client.notifyListener("Runtime Exception: " + e.getMessage());
-            client.closeConnection();
-            client.pauseListener();
         }
     }
 }
