@@ -19,41 +19,47 @@ public class DictionaryClient implements EventPublisher {
     }
 
     public Request createRequest(String request) {
-        int index = request.indexOf("("); // Find first instance of (
-        if(index == -1) {
+        try {
+            int index = request.indexOf("("); // Find first instance of (
+            if(index == -1) {
+                notifyListener("Error: " + request + " is an invalid command");
+                return null;
+            }
+
+            String command = request.substring(0, index);
+            int endIndex = request.indexOf(")");
+            String parameterString = request.substring(index+1, endIndex);
+            String[] parameters = new String[0];
+            if(!parameterString.isEmpty()) {
+                parameters = parameterString.split(",");
+                parameters = Arrays.stream(parameters).map(String::trim).toArray(String[]::new);
+            }
+
+            // Check if command is valid
+            boolean isValid = switch (command) {
+                case "meaning", "remove" -> parameters.length == 1;
+                case "add_meaning" -> parameters.length == 2;
+                case "update" -> parameters.length == 3;
+                case "new" -> parameters.length >= 2;
+                case "start", "exit" -> parameters.length == 0;
+                default -> false;
+            };
+
+            if(isValid) {
+                return new Request(command, parameters);
+            }
+            notifyListener("Error: incorrect number of parameters were provided");
+            return null;
+        } catch (IndexOutOfBoundsException e) {
+            notifyListener("Error: " + request + " is an invalid command");
             return null;
         }
-
-        String command = request.substring(0, index);
-        int endIndex = request.indexOf(")");
-        String parameterString = request.substring(index+1, endIndex);
-        String[] parameters = new String[0];
-        if(!parameterString.isEmpty()) {
-            parameters = parameterString.split(",");
-            parameters = Arrays.stream(parameters).map(String::trim).toArray(String[]::new);
-        }
-
-        // Check if command is valid
-        boolean isValid = switch (command) {
-            case "meaning", "remove" -> parameters.length == 1;
-            case "add_meaning" -> parameters.length == 2;
-            case "update" -> parameters.length == 3;
-            case "new" -> parameters.length >= 2;
-            case "start", "exit" -> parameters.length == 0;
-            default -> false;
-        };
-
-        if(isValid) {
-            return new Request(command, parameters);
-        }
-        return null;
     }
 
     public void sendRequest(String command) {
         Request request = createRequest(command);
 
         if(request == null) {
-            notifyListener("error: " + command + " is an invalid command");
             return;
         }
 
@@ -62,18 +68,18 @@ public class DictionaryClient implements EventPublisher {
                 if(request.command.equals("start")) {
                     startConnection(); // Start up the connection
                 } else {
-                    notifyListener("error: cannot fulfil request, not connected to a server");
+                    notifyListener("Error: cannot fulfil request, not connected to a server");
                 }
             } else {
                 if(request.command.equals("start")) {
-                    notifyListener("error: connection already established");
+                    notifyListener("Error: connection already established");
                 } else {
                     String requestJson = GsonUtil.gson.toJson(request);
                     dos.writeUTF(requestJson); // Send request
                 }
             }
         } catch (IOException e) {
-            notifyListener("error: an IO error occurred");
+            notifyListener("Error: an IO error occurred");
         }
     }
 
@@ -85,12 +91,12 @@ public class DictionaryClient implements EventPublisher {
            dos.close();
            client.close();
        } catch (IOException e) {
-           throw new RuntimeException(e);
+           notifyListener("Error: an IO error occurred");
        }
     }
 
     // Pause the server listener
-    public synchronized void pauseListener() {
+    public synchronized void pauseListener () {
         try {
             wait();
         } catch (InterruptedException e) {
@@ -108,7 +114,7 @@ public class DictionaryClient implements EventPublisher {
             dis = new DataInputStream(client.getInputStream());
             dos = new DataOutputStream(client.getOutputStream());
 
-            notifyListener("attempting to connect...");
+            notifyListener("Attempting to connect...");
             if(serverReader == null) { // Hasn't been instantiated yet
                 serverReader = new ServerReader(this);
                 serverReader.start();
@@ -117,12 +123,10 @@ public class DictionaryClient implements EventPublisher {
             }
 
         } catch(UnknownHostException uhe) { // Tried connecting to a server that doesn't exist
-            System.out.println("Unknown host: " + host);
-            notifyListener("error: cannot connect, server does not exist");
+            notifyListener("Error: cannot connect, server does not exist");
             liveConnection = false;
         } catch(IOException ioe) {
-            System.out.println("IOException: " + ioe);
-            notifyListener("error: connection refused, please try again later");
+            notifyListener("Error: connection refused, please try again later");
             liveConnection = false;
         }
     }

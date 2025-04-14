@@ -70,7 +70,7 @@ public class DictionaryClientGUI extends JFrame implements KeyListener, ActionLi
                 attempts to connect the app to the server
                 "exit()":
                 closes the connection to the server
-                "meaning('word')":
+                "meaning(word)":
                 Fetches the meaning of the specified word
                 "new(word, meaning1, meaning2, ...):
                 Creates a new word with the specified meaning(s)
